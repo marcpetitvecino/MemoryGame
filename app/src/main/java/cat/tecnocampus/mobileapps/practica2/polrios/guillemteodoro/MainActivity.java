@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private int score = 0;
     AppDatabase db;
     private int correctPairs = 0;
+    private boolean isCompairing = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,16 +145,18 @@ public class MainActivity extends AppCompatActivity {
     private void manageCardClick(View v) {
         Card clickedCard = (Card) v.getTag();
 
-        if (lastClickedCard != null) {
-            if (clickedCard.isHidden() && !lastClickedCard.isHidden()) {
-                showCards(v);
-                compareCards(clickedCard, v);
+        if (!isCompairing) {
+            if (lastClickedCard != null) {
+                if (clickedCard.isHidden() && !lastClickedCard.isHidden()) {
+                    showCards(v);
+                    compareCards(clickedCard, v);
+                } else {
+                    storeLastCard(clickedCard, v);
+                }
+
             } else {
                 storeLastCard(clickedCard, v);
             }
-
-        } else {
-            storeLastCard(clickedCard, v);
         }
     }
 
@@ -165,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void compareCards(Card clickedCard, View v) {
+        isCompairing = true;
         if (clickedCard.getValue() == lastClickedCard.getValue()) {
             v.postDelayed((Runnable) () -> {
                 v.setVisibility(View.GONE);
@@ -178,7 +182,16 @@ public class MainActivity extends AppCompatActivity {
                 if (correctPairs == pairNumber) {
                     Game game = new Game(score, userName, (int) pairNumber);
                     db.gameDao().insert(game);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Congratulatons! You won! \n Your score was " + score + " points!");
+                    builder.setOnDismissListener(dialog -> {
+                        Intent intent = new Intent(this, MainActivity.class);
+                        startActivity(intent);
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
                 }
+                isCompairing = false;
             }, 1000);
         } else {
             v.postDelayed((Runnable) () -> {
@@ -191,6 +204,7 @@ public class MainActivity extends AppCompatActivity {
                 lastClickedCardView = v;
                 score-=5;
                 MainActivity.this.setTitle("Score: "+score);
+                isCompairing = false;
             }, 1000);
         }
     }
