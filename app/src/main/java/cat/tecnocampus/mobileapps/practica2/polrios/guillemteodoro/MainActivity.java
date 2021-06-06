@@ -81,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
         game.setLayoutManager(new GridLayoutManager(this, 4));
         Collections.shuffle(imageList);
         cardsRemaining = pairNumber-1;
-        ThreadLocalRandom.current().nextInt(0, (int) cardsRemaining);
         int random;
 
         for (int i = 0; i < pairNumber; i++) {
